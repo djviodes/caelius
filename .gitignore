@@ -1,0 +1,49 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# Env / secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Kafka / Docker local state
+docker-compose.override.yml
+kafka-data/
+zookeeper-data/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python (analysis/ML layer)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
