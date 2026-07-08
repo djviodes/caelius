@@ -44,7 +44,71 @@ The following foundational decisions were made and documented in DESIGN.md:
 
 ### Next Session Goals
 
-- Answer the input signal question
+- Define the Kafka message schema for a spike event
+- Write the first Go struct representing a neuron
+- Get Kafka running locally via Docker Compose
+
+---
+
+## July 7, 2026
+
+### Resolved: Input Signal and Topology Open Questions
+
+Worked through open questions 1 and 2 from the previous session.
+
+**Input signal:** Considered fixed periodic pulses vs. Poisson-process spike
+generation. Researched how Poisson spike generators work — the key
+distinction turned out to be continuous-time exact-event sampling (spike
+intervals drawn from the exponential distribution) vs. discrete-time binned
+approximation (checking a probability per time-bucket, which only converges
+to a true Poisson process as bucket width goes to zero). The continuous
+formulation is the one actually compatible with the event-driven,
+non-tick-based simulation model — a binned approach would quietly
+reintroduce a tick loop. Decided: homogeneous Poisson process, independent
+draws (not a shared spike train) into 4 of the 20 neurons. Independent
+draws were chosen after researching correlated vs. independent input in
+spiking neural networks — correlated input drives the precise pre/post
+spike timing needed for STDP-driven long-term potentiation, while
+independent input is the standard choice for modeling background noise
+and testing network robustness absent a learning rule. Since MVP has no
+plasticity mechanism, independent input is the appropriate MVP choice;
+correlated input is deferred to phase 3, paired with STDP.
+
+**Topology:** Locked in random (not structured) for MVP, strictly
+feed-forward (no cycles), partial reachability acceptable. Noted for
+implementation: generating a random graph that's also guaranteed acyclic
+requires rank-ordered generation (assign each neuron a random topological
+rank, only allow edges from lower to higher rank), not generate-then-discard
+cycle checking. The 4 input neurons become the natural rank-0 source nodes.
+
+### A Real Research Question Surfaced
+
+Underneath the input-neuron-count discussion, a more specific research
+question emerged than what was written in the original open question 3:
+**do spiking neural networks develop preferred signal pathways through
+repeated use, the way biological neural pathways strengthen with use?**
+This is a Hebbian learning / spike-timing-dependent plasticity (STDP)
+question, and current MVP scope has no mechanism for synaptic weights to
+change at all — connections are fixed at startup. This can't be
+investigated until plasticity exists in the simulator.
+
+### Decision: Phased Complexity Roadmap
+
+Formalized a pattern that had already been showing up implicitly across
+several decisions (LIF before Hodgkin-Huxley, etc.): MVP takes the acyclic,
+non-adaptive, uncorrelated version of every axis of the design, and each
+subsequent phase adds one axis of biological realism. Recorded as a table
+in DESIGN.md. Concretely: STDP/synaptic plasticity and correlated input are
+now explicitly phase 3, paired together, since correlated input only does
+anything useful once there's a learning rule for it to drive.
+
+Open question 3 (what the ML layer classifies) is deliberately left open
+and deferred to phase 2 — no need to answer it to unblock MVP work, and the
+phase 3 research question (pathway detection) will likely shape it once
+STDP is actually being designed.
+
+### Next Session Goals
+
 - Define the Kafka message schema for a spike event
 - Write the first Go struct representing a neuron
 - Get Kafka running locally via Docker Compose
